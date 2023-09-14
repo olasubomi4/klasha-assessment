@@ -96,9 +96,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             // Collect all CompletableFuture instances into a list
             List<CompletableFuture<Void>> completableFutures = statesAndCities.values()
                     .stream()
-                    .map(cf -> cf.thenAccept(result -> {
-                        // Perform some action with the result if needed
-                    }))
+                    .map(cf -> cf.thenAccept(result -> {}))
                     .collect(Collectors.toList());
 
             // Wait for all CompletableFuture instances to complete
@@ -387,7 +385,8 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+            throw new CustomRuntimeException(e.getMessage(), e);
+        }
     }
 
     static ExchangeRate unWrapExchangeRate(Optional<ExchangeRate> entity, String targetCurrency, String sourceCurrency) {

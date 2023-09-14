@@ -1,6 +1,10 @@
 package com.klasha.assessment.security;
 
 
+import com.klasha.assessment.security.filter.AuthenticationFilter;
+import com.klasha.assessment.security.filter.ExceptionHandlerFilter;
+import com.klasha.assessment.security.filter.JWTAuthorizationFilter;
+import com.klasha.assessment.security.manager.CustomAuthenticationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,19 +21,26 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @AllArgsConstructor
 public class SecurityConfig {
 
-//    private final CustomAuthenticationManager customAuthenticationManager;
+    private final CustomAuthenticationManager customAuthenticationManager;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-//        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthenticationManager);
-//        authenticationFilter.setFilterProcessesUrl("/authenticate");
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthenticationManager);
+        authenticationFilter.setFilterProcessesUrl("/authenticate");
 
         http
                 .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
-                .sessionManagement(mgt->mgt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                  .authorizeHttpRequests(req->req.requestMatchers("**").permitAll());
+
+                .authorizeRequests(authorize -> authorize.requestMatchers(HttpMethod.POST,SecurityConstants.REGISTER_PATH).permitAll()
+                .anyRequest()
+                .authenticated())
+                .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
+                .addFilter(authenticationFilter)
+                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class)
+                .sessionManagement(mgt->mgt.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         return http.build();
+
     }
-    
 }

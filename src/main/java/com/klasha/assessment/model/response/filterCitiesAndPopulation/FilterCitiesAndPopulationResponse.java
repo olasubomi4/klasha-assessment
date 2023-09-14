@@ -22,7 +22,7 @@ public class FilterCitiesAndPopulationResponse {
         }
         return null;
     }
-    public Long getPopulationValue(Integer index)
+    public Double getPopulationValue(Integer index)
     {
         if(this.isError())
         {
@@ -49,7 +49,6 @@ public class FilterCitiesAndPopulationResponse {
         }
         return null;
     }
-
     public Integer getDataSize()
     {
         if(this.isError())

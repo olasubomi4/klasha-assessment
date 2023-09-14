@@ -34,7 +34,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
             CompletableFuture<FilterCitiesAndPopulationResponse> italyCompletableFuture=getMostPopulatedCities(numberOfCities,"Italy");
             CompletableFuture<FilterCitiesAndPopulationResponse> ghanaCompletableFuture=getMostPopulatedCities(numberOfCities,"Ghana").exceptionally(ex -> handleException("Ghana", ex));
             CompletableFuture.allOf(newZealandCompletableFuture, italyCompletableFuture, ghanaCompletableFuture).join();
-            
+
             List<CityPopulationResponse> cityPopulationResponseList=  new ArrayList<>();
             cityPopulationResponseList.add(generateFilterCitiesAndPopulationResponseData(numberOfCities,newZealandCompletableFuture.get(),"New zealand"));
             cityPopulationResponseList.add(generateFilterCitiesAndPopulationResponseData(numberOfCities,italyCompletableFuture.get(),"Italy"));
@@ -72,6 +72,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
                     httpEntity,
                     FilterCitiesAndPopulationResponse.class
             );
+
             // Check if the response status code is a redirection (3xx)
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
@@ -85,11 +86,8 @@ public class CityPopulationServiceImpl implements CityPopulationService{
                             new HttpEntity<>(null, httpHeaders),
                             FilterCitiesAndPopulationResponse.class
                     );
-
-
                 }
             }
-
             return CompletableFuture.completedFuture(responseEntity.getBody());
         }
         catch (Exception e)

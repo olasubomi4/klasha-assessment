@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class FilterCitiesAndPopulationCityInfoPopulationCount {
     private String year;
-    private Long value;
+    private Double value;
     private String sex;
     private String reliability;
 }

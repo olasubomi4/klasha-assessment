@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class CityPopulationCity {
     private String name;
-    private Long population;
+    private Double population;
 }
