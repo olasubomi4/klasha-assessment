@@ -49,24 +49,31 @@ public class CountryInfoServiceImpl implements CountryInfoService {
         try {
             CountryInfoResponse countryInfoResponse = new CountryInfoResponse();
 
+            log.info("Opening a new thread to get the location of "+country);
             CompletableFuture<CountryLocationResponse> locationResponseCompletableFuture = getLocation(country)
                     .exceptionally(ex ->
                             {
                                 throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
                             }
                     );
+
+            log.info("Opening a new thread to get the population of "+country);
+
             CompletableFuture<CountryPopulationResponse> populationResponseCompletableFuture = getPopulation(country)
                     .exceptionally(ex ->
                             {
                                 throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
                             }
                     );
+            log.info("Opening a new thread to get the capital city of "+country);
             CompletableFuture<CountryCapitalResponse> capitalResponseCompletableFuture = getCapitalCity(country)
                     .exceptionally(ex ->
                             {
                                 throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
                             }
                     );
+
+            log.info("Opening a new thread to get the currency of "+country);
             CompletableFuture<CountryCurrencyResponse> currencyResponseCompletableFuture = getCurrency(country)
                     .exceptionally(ex ->
                             {
@@ -74,6 +81,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             }
                     );
 
+            log.info("Waiting for all CompletableFuture instances to complete then join (block) until all CompletableFuture instances are completed");
             CompletableFuture.allOf(locationResponseCompletableFuture, populationResponseCompletableFuture, capitalResponseCompletableFuture, currencyResponseCompletableFuture).join();
 
             CountryPopulationResponse population=populationResponseCompletableFuture.get();
@@ -83,7 +91,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             CountryCapitalResponse  capitalResponse=capitalResponseCompletableFuture.get();
             countryInfoResponse.setCapital(capitalResponse.getCapital());
 
-            CountryCurrencyResponse countryCurrencyResponse  =currencyResponseCompletableFuture.get();
+            CountryCurrencyResponse countryCurrencyResponse=currencyResponseCompletableFuture.get();
             countryInfoResponse.setIso3(countryCurrencyResponse.getIso3());
             countryInfoResponse.setIso2(countryCurrencyResponse.getIso2());
             countryInfoResponse.setCurrency(countryCurrencyResponse.getCurrency());
@@ -110,12 +118,19 @@ public class CountryInfoServiceImpl implements CountryInfoService {
     public CountryStatesAndCitiesResponse getStatesAndCitiesByCountry(String country) {
         try {
             CountryStatesAndCitiesResponse countryStatesAndCitiesResponse = new CountryStatesAndCitiesResponse();
+
+            log.info("Opening a new thread to get the states in "+ country);
             CompletableFuture<CountryStatesResponse> countryStatesResponseCompletableFuture = getState(country);
+
+            log.info("Waiting for CompletableFuture instance to complete then join (block) until CompletableFuture instance is completed");
             countryStatesResponseCompletableFuture.join();
 
             HashMap<String,CompletableFuture<CountryStateCitiesResponse>> statesAndCities= new HashMap<>();
             for (CountryStatesDataState state:
             countryStatesResponseCompletableFuture.get().getData().getStates()) {
+
+                log.info("Opening a new thread to get cities in "+state);
+
                 CompletableFuture<CountryStateCitiesResponse> countryStateCitiesResponseCompletableFuture = getCitiesInState(country,state.getName()).exceptionally(ex ->
                         {
                             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
@@ -124,16 +139,16 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                 statesAndCities.put(state.getName(),countryStateCitiesResponseCompletableFuture);
             }
 
-            // Collect all CompletableFuture instances into a list
+            log.info("Collecting all CompletableFuture instances into a list");
             List<CompletableFuture<Void>> completableFutures = statesAndCities.values()
                     .stream()
                     .map(cf -> cf.thenAccept(result -> {}))
                     .collect(Collectors.toList());
 
-            // Wait for all CompletableFuture instances to complete
+            log.info("Waiting for all CompletableFuture instances to complete");
             CompletableFuture<Void> allOf = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
 
-            // Join (block) until all CompletableFuture instances are completed
+            log.info("Joining (blocking) until all CompletableFuture instances are completed");
             allOf.join();
 
 
@@ -166,6 +181,8 @@ public class CountryInfoServiceImpl implements CountryInfoService {
     try {
             targetCurrency= targetCurrency.toUpperCase();
             CurrencyConversionResponse currencyConversionResponse= new CurrencyConversionResponse();
+
+            log.info("Opening a new thread to get currency in "+country );
             CompletableFuture<CountryCurrencyResponse> countryCurrencyResponse= getCurrency(country)
                     .exceptionally(ex ->
                     {
@@ -173,6 +190,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                     }
             );
 
+            log.info("Waiting for CompletableFuture instance to complete then join (block) until CompletableFuture instance is completed");
             countryCurrencyResponse.join();
 
             String sourceCurrency =countryCurrencyResponse.get().getData().getCurrency();
@@ -312,7 +330,6 @@ public class CountryInfoServiceImpl implements CountryInfoService {
 
             log.info("Http response: "+responseEntity);
             // Check if the response status code is a redirection (3xx)
-
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {

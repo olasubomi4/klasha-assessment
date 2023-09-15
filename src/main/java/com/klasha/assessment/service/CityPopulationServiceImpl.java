@@ -28,26 +28,32 @@ public class CityPopulationServiceImpl implements CityPopulationService{
     @Override
     public List<CityPopulationResponse> getMostPopulatedCities(Integer numberOfCities)  {
           try {
+
+              log.info("opening a new thread to get populated cities in New zealand");
             CompletableFuture<FilterCitiesAndPopulationResponse> newZealandCompletableFuture= getMostPopulatedCities(numberOfCities,"New zealand")
                     .exceptionally(ex ->
                     {
                         throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
                     }
                     );
-            CompletableFuture<FilterCitiesAndPopulationResponse> italyCompletableFuture=getMostPopulatedCities(numberOfCities,"Italy")
-                    .exceptionally(ex ->
-                    {
-                        throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
-                    }
-                    );
-            CompletableFuture<FilterCitiesAndPopulationResponse> ghanaCompletableFuture=getMostPopulatedCities(numberOfCities,"Ghana")
+
+              log.info("opening a new thread to get populated cities in Italy");
+              CompletableFuture<FilterCitiesAndPopulationResponse> italyCompletableFuture=getMostPopulatedCities(numberOfCities,"Italy")
                     .exceptionally(ex ->
                     {
                         throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
                     }
                     );
 
-            //Waits for the response from the each of the
+              log.info("opening a new thread to get populated cities in Ghana");
+              CompletableFuture<FilterCitiesAndPopulationResponse> ghanaCompletableFuture=getMostPopulatedCities(numberOfCities,"Ghana")
+                    .exceptionally(ex ->
+                    {
+                        throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                    }
+                    );
+
+            log.info("Waiting for all CompletableFuture instances to complete then join (block) until all CompletableFuture instances are completed");
             CompletableFuture.allOf(newZealandCompletableFuture, italyCompletableFuture, ghanaCompletableFuture).join();
 
             List<CityPopulationResponse> cityPopulationResponseList=  new ArrayList<>();
@@ -124,7 +130,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
         }
     }
     private CityPopulationResponse generateFilterCitiesAndPopulationResponseData(Integer numberOfCities,FilterCitiesAndPopulationResponse filterCitiesAndPopulationResponse,String country ) throws ExecutionException, InterruptedException {
-
+        log.info("mapping filterCitiesAndPopulationResponse object to cityPopulationResponse");
 
         CityPopulationResponse cityPopulationResponse= new CityPopulationResponse();
         cityPopulationResponse.setCountry(country);
