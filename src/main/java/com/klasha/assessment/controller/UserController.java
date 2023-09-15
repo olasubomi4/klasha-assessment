@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     UserService userService;
 
-
     @PostMapping("/register")
 	@Operation(summary = "This endpoint is used to register a user to the api")
 	public ResponseEntity<HttpStatus> createUser(@Valid @RequestBody User user) {

@@ -2,8 +2,6 @@ package com.klasha.assessment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klasha.assessment.entity.User;
-import com.klasha.assessment.model.response.cityPopulation.CityPopulationCity;
-import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponse;
 import com.klasha.assessment.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

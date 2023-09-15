@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
     @Bean(name = "taskExecutor")
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(3); // Set the number of core threads
-        executor.setMaxPoolSize(3); // Set the maximum number of threads
-        executor.setQueueCapacity(25); // Set the queue capacity
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(3);
+        executor.setQueueCapacity(25);
         executor.setThreadNamePrefix("new thread");
         executor.initialize();
         return executor;
