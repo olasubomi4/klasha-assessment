@@ -3,14 +3,9 @@ package com.klasha.assessment.security;
 import org.springframework.beans.factory.annotation.Value;
 
 public class SecurityConstants {
-    @Value("${JWT_SECRET_KEY}")
-    public static String SECRET_KEY;
-    @Value("${JWT_TOKEN_EXPIRATION}")
-    public static int TOKEN_EXPIRATION = 7200000; // 7200000 milliseconds = 7200 seconds = 2 hours.
-    @Value("{BEARER}")
-    public static String BEARER = "Bearer "; // Authorization : "Bearer " + Token
-    @Value("${AUTHORIZATION}")
-    public static String AUTHORIZATION = "Authorization"; // "Authorization" : Bearer Token
-    @Value("${REGISTER_PATH}")
-    public static String REGISTER_PATH = "/api/V1/user/register"; // Public path that clients can use to register.
+    public static final String SECRET_KEY = "bQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/A?D*G-KaPdSgVkYp3s6v9y$B&E)"; //Your secret should always be strong (uppercase, lowercase, numbers, symbols) so that nobody can potentially decode the signature.
+    public static final int TOKEN_EXPIRATION = 7200000; // 7200000 milliseconds = 7200 seconds = 2 hours.
+    public static final String BEARER = "Bearer "; // Authorization : "Bearer " + Token
+    public static final String AUTHORIZATION = "Authorization"; // "Authorization" : Bearer Token
+    public static final String REGISTER_PATH = "/api/v1/user/register"; // Public path that clients can use to register.
 }

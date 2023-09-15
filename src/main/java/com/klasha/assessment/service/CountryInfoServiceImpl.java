@@ -1,7 +1,6 @@
 package com.klasha.assessment.service;
 
 import com.klasha.assessment.entity.ExchangeRate;
-import com.klasha.assessment.exception.CustomRuntimeException;
 import com.klasha.assessment.model.response.countryCapital.CountryCapitalResponse;
 import com.klasha.assessment.model.response.countryCurrency.CountryCurrencyResponse;
 import com.klasha.assessment.model.response.countryInfo.CountryInfoLocation;
@@ -16,7 +15,7 @@ import com.klasha.assessment.model.response.countryStatesAndCities.CountryStates
 import com.klasha.assessment.model.response.currencyConversion.CurrencyConversionResponse;
 import com.klasha.assessment.repository.ExchangeRateRepository;
 
-import com.klasha.assessment.utilities.SslManager;
+import com.klasha.assessment.utilities.ErrorMessagesConstant;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,17 +27,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.webjars.NotFoundException;
 
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class CountryInfoServiceImpl implements CountryInfoService {
     private static Logger log = LogManager.getLogger(CityPopulationServiceImpl.class);
-    SslManager sslManger;
 
     private RestTemplate restTemplate;
 
@@ -48,10 +49,30 @@ public class CountryInfoServiceImpl implements CountryInfoService {
         try {
             CountryInfoResponse countryInfoResponse = new CountryInfoResponse();
 
-            CompletableFuture<CountryLocationResponse> locationResponseCompletableFuture = getLocation(country);
-            CompletableFuture<CountryPopulationResponse> populationResponseCompletableFuture = getPopulation(country);
-            CompletableFuture<CountryCapitalResponse> capitalResponseCompletableFuture = getCapitalCity(country);
-            CompletableFuture<CountryCurrencyResponse> currencyResponseCompletableFuture = getCurrency(country);
+            CompletableFuture<CountryLocationResponse> locationResponseCompletableFuture = getLocation(country)
+                    .exceptionally(ex ->
+                            {
+                                throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                            }
+                    );
+            CompletableFuture<CountryPopulationResponse> populationResponseCompletableFuture = getPopulation(country)
+                    .exceptionally(ex ->
+                            {
+                                throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                            }
+                    );
+            CompletableFuture<CountryCapitalResponse> capitalResponseCompletableFuture = getCapitalCity(country)
+                    .exceptionally(ex ->
+                            {
+                                throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                            }
+                    );
+            CompletableFuture<CountryCurrencyResponse> currencyResponseCompletableFuture = getCurrency(country)
+                    .exceptionally(ex ->
+                            {
+                                throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                            }
+                    );
 
             CompletableFuture.allOf(locationResponseCompletableFuture, populationResponseCompletableFuture, capitalResponseCompletableFuture, currencyResponseCompletableFuture).join();
 
@@ -74,9 +95,15 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             countryInfoResponse.setLocation(countryInfoLocation);
             return countryInfoResponse;
         }
-        catch (Exception e)
-        {
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+        catch (ExecutionException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        }
+
     }
 
     @Override
@@ -89,7 +116,11 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             HashMap<String,CompletableFuture<CountryStateCitiesResponse>> statesAndCities= new HashMap<>();
             for (CountryStatesDataState state:
             countryStatesResponseCompletableFuture.get().getData().getStates()) {
-                CompletableFuture<CountryStateCitiesResponse> countryStateCitiesResponseCompletableFuture = getCitiesInState(country,state.getName());
+                CompletableFuture<CountryStateCitiesResponse> countryStateCitiesResponseCompletableFuture = getCitiesInState(country,state.getName()).exceptionally(ex ->
+                        {
+                            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                        }
+                );
                 statesAndCities.put(state.getName(),countryStateCitiesResponseCompletableFuture);
             }
 
@@ -119,45 +150,64 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             countryStatesAndCitiesData.setStatesAndCities(result);
             countryStatesAndCitiesResponse.setData(countryStatesAndCitiesData);
             return countryStatesAndCitiesResponse;
+        } catch (ExecutionException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
-        catch (Exception e)
-        {
-            throw new CustomRuntimeException(e.getMessage(),e);
+        catch (RuntimeException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
+
     }
 
     @Override
-    public CurrencyConversionResponse convertCurrency(String country, double amount, String targetCurrency) {
-        try {
+    public CurrencyConversionResponse convertCurrency(String country, BigDecimal amount, String targetCurrency) {
+    try {
             targetCurrency= targetCurrency.toUpperCase();
             CurrencyConversionResponse currencyConversionResponse= new CurrencyConversionResponse();
-            CompletableFuture<CountryCurrencyResponse> countryCurrencyResponse= getCurrency(country);
+            CompletableFuture<CountryCurrencyResponse> countryCurrencyResponse= getCurrency(country)
+                    .exceptionally(ex ->
+                    {
+                        throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+                    }
+            );
+
             countryCurrencyResponse.join();
 
             String sourceCurrency =countryCurrencyResponse.get().getData().getCurrency();
             Optional<ExchangeRate>exchangeRate = exchangeRateRepository.findExchangeRatesByTargetCurrencyAndSourceCurrency(targetCurrency,sourceCurrency);
-            ExchangeRate unWrappedExchangeRate= unWrapExchangeRate(exchangeRate,targetCurrency,sourceCurrency);
+            ExchangeRate unWrappedExchangeRate= unWrapExchangeRate(exchangeRate,targetCurrency,country);
             currencyConversionResponse.setCountryCurrency(sourceCurrency);
-            currencyConversionResponse.setConvertedAmount(unWrappedExchangeRate.getRate()*amount);
+            currencyConversionResponse.setConvertedAmount(unWrappedExchangeRate.getRate().multiply(amount));
             currencyConversionResponse.setTargetCurrency(targetCurrency);
             return currencyConversionResponse;
 
-        }catch (Exception exception)
-        {
-            throw new CustomRuntimeException(exception.getMessage(),exception);
+        }
+        catch (ExecutionException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
+        }
+        catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
     }
 
     @Async
     public CompletableFuture<CountryLocationResponse> getLocation(String country) {
         try {
-            log.info("Getting location of " + country + " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
+            log.info("Getting location of " + country);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
-            sslManger.disableSSL();
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+
+            log.info("Sending http post request, request body: "+requestBody.toString() );
             ResponseEntity<CountryLocationResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/positions",
                     HttpMethod.POST,
@@ -165,11 +215,16 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                     CountryLocationResponse.class
             );
 
+            log.info("Http response: "+responseEntity);
+
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
+
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
 
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
@@ -178,38 +233,47 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryLocationResponse.class
                     );
+                    log.info("Http response " +responseEntity);
                 }
             }
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);
+            log.error("An exception occurred while trying to get the location of "+country+": "+e.toString());
+            throw new RuntimeException();
         }
     }
 
     @Async
     public CompletableFuture<CountryCapitalResponse> getCapitalCity(String country) {
         try {
-            log.info("Getting capital city of  " + country + " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
+            log.info("Getting capital city of  " + country);
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+
+            log.info("Sending http post request, request body: "+requestBody.toString() );
+
             ResponseEntity<CountryCapitalResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/capital",
                     HttpMethod.POST,
                     httpEntity,
                     CountryCapitalResponse.class
             );
+
+            log.info("Http response: "+responseEntity);
+
             // Check if the response status code is a redirection (3xx)
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
-                    ;
+
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
 
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
@@ -218,38 +282,45 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryCapitalResponse.class
                     );
+
+                    log.info("Http response " +responseEntity);
                 }
             }
-
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+            log.error("An exception occurred while trying to get the capital of "+country+": "+e.toString());
+            throw new RuntimeException();
+        }
     }
 
     @Async
     public CompletableFuture<CountryPopulationResponse> getPopulation(String country) {
         try {
-            log.info("Getting population of " + country + " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
+            log.info("Getting population of " + country);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+            log.info("Sending http post request, request body: "+requestBody.toString() );
             ResponseEntity<CountryPopulationResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/population",
                     HttpMethod.POST,
                     httpEntity,
                     CountryPopulationResponse.class
             );
+
+            log.info("Http response: "+responseEntity);
             // Check if the response status code is a redirection (3xx)
+
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
-                    ;
+
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
 
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
@@ -258,39 +329,46 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryPopulationResponse.class
                     );
+                    log.info("Http response " +responseEntity);
                 }
             }
-
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+            log.error("An exception occurred while trying to get the population of "+country+": "+e.toString());
+            throw new RuntimeException();
+        }
     }
 
-    @Async
+
     public CompletableFuture<CountryCurrencyResponse> getCurrency(String country) {
         try {
-            log.info("Getting currency of " + country + " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
+            log.info("Getting currency of " + country);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
-            sslManger.disableSSL();
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+
+            log.info("Sending http post request, request body: "+requestBody.toString() );
             ResponseEntity<CountryCurrencyResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/currency",
                     HttpMethod.POST,
                     httpEntity,
                     CountryCurrencyResponse.class
             );
+
+            log.info("Http response: "+responseEntity);
+
             // Check if the response status code is a redirection (3xx)
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
-                    sslManger.disableSSL();
+
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
+
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
                             url,
@@ -298,38 +376,43 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryCurrencyResponse.class
                     );
+                    log.info("Http response " +responseEntity);
                 }
             }
 
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+            log.error("An exception occurred while trying to get the currency of "+country+": "+e.toString());
+            throw new RuntimeException();
+        }
     }
 
     @Async
     public CompletableFuture<CountryStatesResponse> getState(String country) {
         try {
-            log.info("Getting states in " + country + " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
+            log.info("Getting states in " + country);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+            log.info("Sending http post request, request body: "+requestBody.toString() );
             ResponseEntity<CountryStatesResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/states",
                     HttpMethod.POST,
                     httpEntity,
                     CountryStatesResponse.class
             );
+
+            log.info("Http response: "+responseEntity);
             // Check if the response status code is a redirection (3xx)
             if (responseEntity.getStatusCode().is3xxRedirection()) {
                 HttpHeaders headers = responseEntity.getHeaders();
                 if (headers.containsKey("Location")) {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
-                    ;
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
 
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
@@ -338,31 +421,36 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryStatesResponse.class
                     );
+                    log.info("Http response " +responseEntity);
                 }
             }
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(),e);        }
+            log.error("An exception occurred while trying to get the states in "+country+": "+e.toString());
+            throw new RuntimeException();
+        }
     }
 
     @Async
     public CompletableFuture<CountryStateCitiesResponse> getCitiesInState(String country, String state) {
         try {
-            log.info("Getting states in " + country+ " "+ Thread.currentThread().getName());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("country", country);
-            jsonObject.put("state", state);
+            log.info("Getting states in " + country);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("country", country);
+            requestBody.put("state", state);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-Type", "application/json");
-            HttpEntity httpEntity = new HttpEntity(jsonObject.toString(), httpHeaders);
+            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
+            log.info("Sending http post request, request body: "+requestBody.toString() );
+
             ResponseEntity<CountryStateCitiesResponse> responseEntity = restTemplate.exchange(
                     "https://countriesnow.space/api/v0.1/countries/state/cities",
                     HttpMethod.POST,
                     httpEntity,
                     CountryStateCitiesResponse.class
             );
+
+            log.info("Http response: "+responseEntity);
 
             // Check if the response status code is a redirection (3xx)
             if (responseEntity.getStatusCode().is3xxRedirection()) {
@@ -371,6 +459,8 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                     String redirectUrl = headers.getFirst("Location");
                     String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
                     ;
+                    log.info("Redirecting http request to " +url);
+                    log.info("Sending http get request, request body: "+requestBody.toString() );
 
                     // Make a new request to the redirect URL
                     responseEntity = restTemplate.exchange(
@@ -379,19 +469,19 @@ public class CountryInfoServiceImpl implements CountryInfoService {
                             new HttpEntity<>(null, httpHeaders),
                             CountryStateCitiesResponse.class
                     );
+                    log.info("Http response " +responseEntity);
                 }
             }
-            log.info(responseEntity.getBody());
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
-            log.info("Unable to get city population");
-            throw new CustomRuntimeException(e.getMessage(), e);
+            log.error("An exception occurred while trying to get the cities in "+state+": "+e.toString());
+            throw new RuntimeException();
         }
     }
 
-    static ExchangeRate unWrapExchangeRate(Optional<ExchangeRate> entity, String targetCurrency, String sourceCurrency) {
+    static ExchangeRate unWrapExchangeRate(Optional<ExchangeRate> entity, String targetCurrency,String country) {
         if (entity.isPresent()) return entity.get();
-        else throw new CustomRuntimeException("Could not find source currency" +sourceCurrency+ " and target currency " + targetCurrency);
+        else throw new NotFoundException("Currency conversion not available for the "+ country+ " and " +targetCurrency+" Please check the provided country and currency codes, and ensure they are valid for conversion");
     }
 
 }

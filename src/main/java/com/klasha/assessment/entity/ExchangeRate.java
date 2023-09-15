@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -23,7 +24,7 @@ public class ExchangeRate implements Serializable {
     private int id;
     private String sourceCurrency;
     private String targetCurrency;
-    private double rate;
+    private BigDecimal rate;
 
 
     @Column(name = "created_at", nullable = false, updatable = false)

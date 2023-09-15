@@ -1,16 +1,12 @@
 //package com.klasha.assessment;
 //
 //import com.fasterxml.jackson.core.JsonProcessingException;
-//import com.klasha.assessment.exception.CustomRuntimeException;
-//import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponse;
-//import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponseDataCities;
 //import com.klasha.assessment.model.response.currencyConversion.CurrencyConversionResponse;
 //import com.klasha.assessment.repository.ExchangeRateRepository;
 //import com.klasha.assessment.service.CityPopulationService;
 //import com.klasha.assessment.service.CityPopulationServiceImpl;
 //import com.klasha.assessment.service.CountryInfoService;
 //import com.klasha.assessment.service.CountryInfoServiceImpl;
-//import com.klasha.assessment.utilities.SslManager;
 //import org.json.JSONObject;
 //import org.junit.Test;
 //import org.junit.runner.RunWith;
@@ -21,8 +17,6 @@
 //
 //import java.sql.Timestamp;
 //import java.time.Instant;
-//import java.util.ArrayList;
-//import java.util.List;
 //import java.util.Optional;
 //
 //import static org.junit.Assert.assertNotNull;
@@ -36,7 +30,7 @@
 //    @Mock
 //    ExchangeRateRepository exchangeRateRepository;
 //    @InjectMocks
-//    CountryInfoService countryInfoService= new CountryInfoServiceImpl(new SslManager(),new RestTemplate(),exchangeRateRepository);
+//    CountryInfoService countryInfoService= new CountryInfoServiceImpl(new RestTemplate(),exchangeRateRepository);
 //
 //    @InjectMocks
 //    CityPopulationService cityPopulationService= new CityPopulationServiceImpl(new RestTemplate());

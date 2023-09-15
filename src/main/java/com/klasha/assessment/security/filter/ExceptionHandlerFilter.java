@@ -1,10 +1,12 @@
 package com.klasha.assessment.security.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 
 import com.klasha.assessment.exception.EntityNotFoundException;
-import com.klasha.assessment.exception.ErrorRes;
+import com.klasha.assessment.exception.ErrorResponse;
+import com.klasha.assessment.exception.InvalidCredentialsException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,42 +18,38 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        ErrorRes errorRes= new ErrorRes();
-        errorRes.setInstance(request.getRequestURI());
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)throws IOException {
+        ErrorResponse errorRes= new ErrorResponse();
         response.setContentType("application/json");
         try {
             filterChain.doFilter(request, response);
         } catch (EntityNotFoundException e) {
-            errorRes.setTitle("Username doesn't exist");
-            errorRes.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            errorRes.setDetail(e.getMessage());
-            errorRes.setType("Username doesn't exist");
+            errorRes.setMessage("Username doesn't exist");
+            errorRes.setErrors(Arrays.asList(e.getMessage()));
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write(errorRes.toString());
             response.getWriter().flush();
         } catch (JWTVerificationException e) {
-            errorRes.setTitle("JWT NOT VALID");
-            errorRes.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            errorRes.setDetail(e.getMessage());
-            errorRes.setType("JWT NOT VALID");
-            response.setContentType("application/json");
+            errorRes.setMessage("JWT NOT VALID");
+            errorRes.setErrors(Arrays.asList(e.getMessage()));
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write(errorRes.toString());
             response.getWriter().flush();
+        } catch (InvalidCredentialsException e) {
+            errorRes.setMessage("Unauthorized");
+            errorRes.setErrors(Arrays.asList(e.getMessage()));
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(errorRes.toString());
+            response.getWriter().flush();
         } catch (RuntimeException e) {
-            errorRes.setTitle("BAD REQUEST");
-            errorRes.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            errorRes.setDetail(e.getMessage());
-            errorRes.setType("BAD REQUEST");
+            errorRes.setMessage("BAD REQUEST");
+            errorRes.setErrors(Arrays.asList(e.getMessage()));
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(errorRes.toString());
             response.getWriter().flush();
         } catch (ServletException e) {
-            errorRes.setTitle("Service not available");
-            errorRes.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            errorRes.setDetail(e.getMessage());
-            errorRes.setType("Service not available");
+            errorRes.setMessage("Service not available");
+            errorRes.setErrors(Arrays.asList(e.getMessage()));
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             response.getWriter().write(errorRes.toString());
             response.getWriter().flush();

@@ -5,6 +5,7 @@ import java.util.Date;
 
 
 import com.klasha.assessment.entity.User;
+import com.klasha.assessment.exception.InvalidCredentialsException;
 import com.klasha.assessment.security.SecurityConstants;
 import com.klasha.assessment.security.manager.CustomAuthenticationManager;
 import jakarta.servlet.FilterChain;
@@ -32,7 +33,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
+    {
         try {
             User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
             Authentication authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());

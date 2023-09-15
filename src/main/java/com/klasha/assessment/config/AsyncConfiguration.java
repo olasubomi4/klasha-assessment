@@ -1,36 +1,22 @@
 package com.klasha.assessment.config;
 
-import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.concurrent.Executor;
-
 @Configuration
-
-//public class AsyncConfiguration extends AsyncConfigurerSupport {
+@EnableAsync
  public class AsyncConfiguration{
 
-//    @Bean
-//    public Executor taskExecutor()  {
-//
-//
-//    }
-//    @Autowired
-//    private AsyncExceptionHandler asyncExceptionHandler;
-    @Bean
-    public Executor getAsyncExecutor() {
+    @Bean(name = "taskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(14);
-        executor.setMaxPoolSize(14);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("Thread vibes");
+        executor.setCorePoolSize(3); // Set the number of core threads
+        executor.setMaxPoolSize(3); // Set the maximum number of threads
+        executor.setQueueCapacity(25); // Set the queue capacity
+        executor.setThreadNamePrefix("new thread");
         executor.initialize();
         return executor;
     }
 
-//    @Override
-//    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-//        return asyncExceptionHandler;
-//    }
 }

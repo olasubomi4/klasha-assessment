@@ -3,10 +3,12 @@ package com.klasha.assessment.model.response.currencyConversion;
 import lombok.Data;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
+
 @Data
 public class CurrencyConversionResponse {
     private String countryCurrency;
-    private double convertedAmount;
+    private BigDecimal convertedAmount;
     private String targetCurrency;
 
     @Override
