@@ -65,13 +65,16 @@ public class CityPopulationServiceImpl implements CityPopulationService{
         }
         catch (InterruptedException e)
         {
+            log.error(e,e);
             throw new RuntimeException();
         } catch (UnsupportedEncodingException e) {
               throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
           } catch (ExecutionException e) {
+              log.error(e,e);
               throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
           }
           catch (RuntimeException e) {
+              log.error(e,e);
               throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
           }
     }
@@ -126,7 +129,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
         catch (Exception e)
         {
             log.error("An exception occurred for " + country + ": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
     private CityPopulationResponse generateFilterCitiesAndPopulationResponseData(Integer numberOfCities,FilterCitiesAndPopulationResponse filterCitiesAndPopulationResponse,String country ) throws ExecutionException, InterruptedException {

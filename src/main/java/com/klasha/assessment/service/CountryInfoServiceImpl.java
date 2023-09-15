@@ -10,7 +10,6 @@ import com.klasha.assessment.model.response.countryPopulation.CountryPopulationR
 import com.klasha.assessment.model.response.countryStateCities.CountryStateCitiesResponse;
 import com.klasha.assessment.model.response.countryStates.CountryStatesDataState;
 import com.klasha.assessment.model.response.countryStates.CountryStatesResponse;
-import com.klasha.assessment.model.response.countryStatesAndCities.CountryStatesAndCitiesData;
 import com.klasha.assessment.model.response.countryStatesAndCities.CountryStatesAndCitiesResponse;
 import com.klasha.assessment.model.response.currencyConversion.CurrencyConversionResponse;
 import com.klasha.assessment.repository.ExchangeRateRepository;
@@ -104,11 +103,14 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return countryInfoResponse;
         }
         catch (ExecutionException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         } catch (InterruptedException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
         catch (RuntimeException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
 
@@ -154,23 +156,24 @@ public class CountryInfoServiceImpl implements CountryInfoService {
 
             Iterator<HashMap.Entry<String, CompletableFuture<CountryStateCitiesResponse>>> iterator = statesAndCities.entrySet().iterator();
             HashMap<String,List<String>> result = new HashMap<>();
-            CountryStatesAndCitiesData countryStatesAndCitiesData=new CountryStatesAndCitiesData();
             while (iterator.hasNext()) {
                 Map.Entry<String, CompletableFuture<CountryStateCitiesResponse>> entry = iterator.next();
                 String key = entry.getKey();
                 CompletableFuture<CountryStateCitiesResponse> value = entry.getValue();
                 result.put(key,value.get().getData());
             }
-            countryStatesAndCitiesData.setCountry(country);
-            countryStatesAndCitiesData.setStatesAndCities(result);
-            countryStatesAndCitiesResponse.setData(countryStatesAndCitiesData);
+            countryStatesAndCitiesResponse.setCountry(country);
+            countryStatesAndCitiesResponse.setStatesAndCities(result);
             return countryStatesAndCitiesResponse;
         } catch (ExecutionException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         } catch (InterruptedException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
         catch (RuntimeException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
 
@@ -179,7 +182,6 @@ public class CountryInfoServiceImpl implements CountryInfoService {
     @Override
     public CurrencyConversionResponse convertCurrency(String country, BigDecimal amount, String targetCurrency) {
     try {
-            targetCurrency= targetCurrency.toUpperCase();
             CurrencyConversionResponse currencyConversionResponse= new CurrencyConversionResponse();
 
             log.info("Opening a new thread to get currency in "+country );
@@ -203,14 +205,18 @@ public class CountryInfoServiceImpl implements CountryInfoService {
 
         }
         catch (ExecutionException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         } catch (InterruptedException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
         catch (NotFoundException e) {
+            log.error(e,e);
             throw new NotFoundException(e.getMessage());
         }
         catch (RuntimeException e) {
+            log.error(e,e);
             throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
         }
     }
@@ -257,7 +263,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the location of "+country+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
@@ -307,7 +313,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the capital of "+country+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
@@ -352,7 +358,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the population of "+country+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
@@ -400,7 +406,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the currency of "+country+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
@@ -444,7 +450,7 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the states in "+country+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
@@ -492,13 +498,18 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             return CompletableFuture.completedFuture(responseEntity.getBody());
         } catch (Exception e) {
             log.error("An exception occurred while trying to get the cities in "+state+": "+e.toString());
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 
     static ExchangeRate unWrapExchangeRate(Optional<ExchangeRate> entity, String targetCurrency,String country) {
-        if (entity.isPresent()) return entity.get();
-        else throw new NotFoundException("Currency conversion not available for the "+ country+ " and " +targetCurrency+" Please check the provided country and currency codes, and ensure they are valid for conversion");
+        if (entity.isPresent()) {
+            return entity.get();
+        }
+        else {
+            log.info("Currency conversion not available for the " + country + " and " + targetCurrency + " Please check the provided country and currency codes, and ensure they are valid for conversion");
+            throw new NotFoundException("Currency conversion not available for the " + country + " and " + targetCurrency + " Please check the provided country and currency codes, and ensure they are valid for conversion");
+        }
     }
 
 }
