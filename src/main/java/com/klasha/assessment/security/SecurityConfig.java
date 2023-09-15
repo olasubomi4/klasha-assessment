@@ -36,7 +36,7 @@ public class SecurityConfig {
 
 
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(secretKey,tokenExpiration,customAuthenticationManager);
-        authenticationFilter.setFilterProcessesUrl("/authenticate");
+        authenticationFilter.setFilterProcessesUrl("/api/v1/user/authenticate");
 
         http
                 .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())

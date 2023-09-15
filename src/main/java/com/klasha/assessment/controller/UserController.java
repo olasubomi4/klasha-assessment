@@ -24,4 +24,9 @@ public class UserController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
+	@Operation(summary = "Authenticate User and Generate Bearer Token",description = "Authenticate a user and generate a bearer token for authorization.")
+	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	public void authenticate(@Valid @RequestBody User user) {
+	}
+
 }
