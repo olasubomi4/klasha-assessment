@@ -2,6 +2,7 @@ package com.klasha.assessment.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.*;
 
 
@@ -15,10 +16,12 @@ import lombok.*;
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor
+
 public class User {
 
     @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Hidden
 	private long id;
 
 	@NotBlank(message =  "username cannot be blank")

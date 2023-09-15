@@ -5,14 +5,19 @@ import java.util.Date;
 
 
 import com.klasha.assessment.entity.User;
-import com.klasha.assessment.exception.InvalidCredentialsException;
 import com.klasha.assessment.security.SecurityConstants;
 import com.klasha.assessment.security.manager.CustomAuthenticationManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -25,11 +30,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 
-
 @AllArgsConstructor
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private CustomAuthenticationManager authenticationManager;
+    @Value("${jwt.secret.key}")
+    public  String secretKey;
+    @Value("${jwt.token.expiration}")
+    public Integer tokenExpiration;
+
+    private  final CustomAuthenticationManager authenticationManager;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -54,8 +63,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         String token = JWT.create()
             .withSubject(authResult.getName())
-            .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRATION))
-            .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+            .withExpiresAt(new Date(System.currentTimeMillis() + tokenExpiration))
+            .sign(Algorithm.HMAC512(secretKey));
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
     }
 

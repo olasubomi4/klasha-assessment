@@ -18,9 +18,9 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Klasha assessment API")
-                        .version("v1.0"));
-//                .components((new Components()).addSecuritySchemes("bearer-key", (new SecurityScheme())
-//                        .type(SecurityScheme.Type.HTTP).scheme("bearer")))
-//                .addSecurityItem((new SecurityRequirement()).addList("bearer-key", Arrays.asList(new String[] { "read", "write" })));
+                        .version("v1.0"))
+                .components((new Components()).addSecuritySchemes("bearer-key", (new SecurityScheme())
+                        .type(SecurityScheme.Type.HTTP).scheme("bearer")))
+                .addSecurityItem((new SecurityRequirement()).addList("bearer-key", Arrays.asList(new String[] { "read", "write" })));
     }
 }
