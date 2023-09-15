@@ -36,9 +36,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Value("${jwt.secret.key}")
     public  String secretKey;
     @Value("${jwt.token.expiration}")
-    public Integer tokenExpiration;
+    public  Integer tokenExpiration;
 
-    private  final CustomAuthenticationManager authenticationManager;
+    private final CustomAuthenticationManager authenticationManager;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -67,6 +67,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             .sign(Algorithm.HMAC512(secretKey));
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
     }
+
 
 
 }
