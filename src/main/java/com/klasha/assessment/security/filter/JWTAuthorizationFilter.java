@@ -32,9 +32,13 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith(SecurityConstants.BEARER)) {
+            System.out.println( request.getRequestURI().toString());
+            if("/api/v1/user/register".equalsIgnoreCase(request.getRequestURI().toString()))
+            {
+                filterChain.doFilter(request, response);
+                return;
+            }
             throw new InvalidCredentialsException("Missing authorization header");
-//            filterChain.doFilter(request, response);
-//            return;
         }
 
         String token = header.replace(SecurityConstants.BEARER, "");
