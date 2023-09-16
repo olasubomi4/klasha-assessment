@@ -196,6 +196,8 @@ public class CountryInfoServiceImpl implements CountryInfoService {
             countryCurrencyResponse.join();
 
             String sourceCurrency =countryCurrencyResponse.get().getData().getCurrency();
+
+            log.info("Getting exchange rates");
             Optional<ExchangeRate>exchangeRate = exchangeRateRepository.findExchangeRatesByTargetCurrencyAndSourceCurrency(targetCurrency,sourceCurrency);
             ExchangeRate unWrappedExchangeRate= unWrapExchangeRate(exchangeRate,targetCurrency,country);
             currencyConversionResponse.setCountryCurrency(sourceCurrency);
