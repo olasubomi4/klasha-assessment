@@ -3,7 +3,6 @@ package com.klasha.assessment.security.filter;
 import java.io.IOException;
 import java.util.Arrays;
 
-
 import com.klasha.assessment.exception.EntityNotFoundException;
 import com.klasha.assessment.exception.ErrorResponse;
 import com.klasha.assessment.exception.InvalidCredentialsException;

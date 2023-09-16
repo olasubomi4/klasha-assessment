@@ -11,9 +11,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-
-import lombok.AllArgsConstructor;
-
 @Component
 
 public class CustomAuthenticationManager implements AuthenticationManager {

@@ -2,7 +2,6 @@ package com.klasha.assessment.controller;
 
 import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponse;
 import com.klasha.assessment.service.CityPopulationService;
-import com.klasha.assessment.validators.IntegerNotBlank;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

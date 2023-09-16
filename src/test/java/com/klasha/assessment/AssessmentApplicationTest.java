@@ -16,9 +16,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -73,7 +70,7 @@ public class AssessmentApplicationTest {
     }
 
     @Test
-    public void getMostPopulatedCitiesTest_Success() throws Exception {
+    public void getMostPopulatedCitiesTestSuccess() throws Exception {
 
         RequestBuilder request = MockMvcRequestBuilders.get("/api/v1/most-populated-cities?numberOfCities=2")
                 .header("Authorization",  this.jwtToken);
@@ -84,7 +81,7 @@ public class AssessmentApplicationTest {
     }
 
     @Test
-    public void testRegisterUser_success() throws Exception {
+    public void testRegisterUserSuccess() throws Exception {
 
         User newUser= new User();
         newUser.setUsername("test3");
@@ -101,7 +98,7 @@ public class AssessmentApplicationTest {
     }
 
     @Test
-    public void testRegisterUser_error() throws Exception {
+    public void testRegisterUserError() throws Exception {
 
         User newUser= new User();
         newUser.setUsername("");
