@@ -2,10 +2,12 @@ package com.klasha.assessment.service;
 
 import com.klasha.assessment.model.response.cityPopulation.CityPopulationCity;
 import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponse;
+import com.klasha.assessment.utilities.CityPopulationServiceRestAsync;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.junit.Test;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -15,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CityPopulationServiceTest {
+    
     @InjectMocks
-    CityPopulationService cityPopulationService= new CityPopulationServiceImpl(new RestTemplate());
+    CityPopulationService cityPopulationService= new CityPopulationServiceImpl(new RestTemplate(),new CityPopulationServiceRestAsync(new RestTemplate()));
 
     @Test
     public void testMostPopulatedCitiesInNewZealandGhanaItaly_success()

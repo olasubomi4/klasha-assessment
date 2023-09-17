@@ -3,6 +3,7 @@ package com.klasha.assessment.service;
 import com.klasha.assessment.model.response.cityPopulation.CityPopulationCity;
 import com.klasha.assessment.model.response.cityPopulation.CityPopulationResponse;
 import com.klasha.assessment.model.response.filterCitiesAndPopulation.FilterCitiesAndPopulationResponse;
+import com.klasha.assessment.utilities.CityPopulationServiceRestAsync;
 import com.klasha.assessment.utilities.ErrorMessagesConstant;
 import lombok.AllArgsConstructor;
 import org.json.JSONObject;
@@ -24,13 +25,14 @@ import java.util.concurrent.ExecutionException;
 public class CityPopulationServiceImpl implements CityPopulationService{
     private static Logger log = LogManager.getLogger(CityPopulationServiceImpl.class);
     private final RestTemplate restTemplate;
+    private CityPopulationServiceRestAsync cityPopulationServiceRestAsync;
 
     @Override
     public List<CityPopulationResponse> getMostPopulatedCities(Integer numberOfCities)  {
           try {
 
               log.info("opening a new thread to get populated cities in New zealand");
-            CompletableFuture<FilterCitiesAndPopulationResponse> newZealandCompletableFuture= getMostPopulatedCities(numberOfCities,"New zealand")
+            CompletableFuture<FilterCitiesAndPopulationResponse> newZealandCompletableFuture= cityPopulationServiceRestAsync.getMostPopulatedCities(numberOfCities,"New zealand")
                     .exceptionally(ex ->
                     {
                         throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
@@ -38,7 +40,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
                     );
 
               log.info("opening a new thread to get populated cities in Italy");
-              CompletableFuture<FilterCitiesAndPopulationResponse> italyCompletableFuture=getMostPopulatedCities(numberOfCities,"Italy")
+              CompletableFuture<FilterCitiesAndPopulationResponse> italyCompletableFuture=cityPopulationServiceRestAsync.getMostPopulatedCities(numberOfCities,"Italy")
                     .exceptionally(ex ->
                     {
                         throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
@@ -46,7 +48,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
                     );
 
               log.info("opening a new thread to get populated cities in Ghana");
-              CompletableFuture<FilterCitiesAndPopulationResponse> ghanaCompletableFuture=getMostPopulatedCities(numberOfCities,"Ghana")
+              CompletableFuture<FilterCitiesAndPopulationResponse> ghanaCompletableFuture=cityPopulationServiceRestAsync.getMostPopulatedCities(numberOfCities,"Ghana")
                     .exceptionally(ex ->
                     {
                         throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
@@ -78,60 +80,7 @@ public class CityPopulationServiceImpl implements CityPopulationService{
               throw new RuntimeException(ErrorMessagesConstant.UNABLE_TO_PROCESS_REQUEST_AT_THE_MOMENT);
           }
     }
-    @Async("taskExecutor")
-    public CompletableFuture<FilterCitiesAndPopulationResponse> getMostPopulatedCities(Integer numberOfCities,String country) throws InterruptedException, UnsupportedEncodingException {
-        try {
-            log.info("Getting most in populated " + country);
 
-            JSONObject requestBody = new JSONObject();
-            requestBody.put("limit", numberOfCities);
-            requestBody.put("order", "dsc");
-            requestBody.put("orderBy", "population");
-            requestBody.put("country", country);
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set("Content-Type", "application/json");
-
-            log.info("Sending http post request, request body: "+requestBody.toString() );
-
-            HttpEntity httpEntity = new HttpEntity(requestBody.toString(), httpHeaders);
-            ResponseEntity<FilterCitiesAndPopulationResponse> responseEntity = restTemplate.exchange(
-                    "https://countriesnow.space/api/v0.1/countries/population/cities/filter",
-                    HttpMethod.POST,
-                    httpEntity,
-                    FilterCitiesAndPopulationResponse.class
-            );
-
-            log.info("Http response: "+responseEntity);
-
-            // Check if the response status code is a redirection (3xx)
-            if (responseEntity.getStatusCode().is3xxRedirection()) {
-                HttpHeaders headers = responseEntity.getHeaders();
-                if (headers.containsKey("Location")) {
-                    String redirectUrl = headers.getFirst("Location");
-                    String url = "https://countriesnow.space" + URLDecoder.decode(redirectUrl, "UTF-8");
-
-                    log.info("Redirecting http request to " +url);
-                    log.info("Sending http get request, request body: "+requestBody.toString() );
-
-                    // Make a new request to the redirect URL
-                    responseEntity = restTemplate.exchange(
-                            url,
-                            HttpMethod.GET,
-                            new HttpEntity<>(null, httpHeaders),
-                            FilterCitiesAndPopulationResponse.class
-                    );
-
-                    log.info("Http response " +responseEntity);
-                }
-            }
-            return CompletableFuture.completedFuture(responseEntity.getBody());
-        }
-        catch (Exception e)
-        {
-            log.error("An exception occurred for " + country + ": "+e.toString());
-            throw new RuntimeException(e.getMessage(),e);
-        }
-    }
     private CityPopulationResponse generateFilterCitiesAndPopulationResponseData(Integer numberOfCities,FilterCitiesAndPopulationResponse filterCitiesAndPopulationResponse,String country ) throws ExecutionException, InterruptedException {
         log.info("mapping filterCitiesAndPopulationResponse object to cityPopulationResponse");
 

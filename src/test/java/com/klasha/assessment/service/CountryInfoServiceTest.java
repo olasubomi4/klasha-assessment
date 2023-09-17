@@ -6,6 +6,7 @@ import com.klasha.assessment.model.response.countryInfo.CountryInfoResponse;
 import com.klasha.assessment.model.response.countryStatesAndCities.CountryStatesAndCitiesResponse;
 import com.klasha.assessment.model.response.currencyConversion.CurrencyConversionResponse;
 import com.klasha.assessment.repository.ExchangeRateRepository;
+import com.klasha.assessment.utilities.CountryInfoServiceRestAsync;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,8 +29,10 @@ public class CountryInfoServiceTest {
 
     @Mock
     ExchangeRateRepository exchangeRateRepository;
+
+
     @InjectMocks
-    CountryInfoService countryInfoService= new CountryInfoServiceImpl(new RestTemplate(),exchangeRateRepository);
+    CountryInfoService countryInfoService= new CountryInfoServiceImpl(new RestTemplate(),exchangeRateRepository,new CountryInfoServiceRestAsync(new RestTemplate()));
 
 
     @Test
